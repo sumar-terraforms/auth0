@@ -5,125 +5,19 @@ terraform {
       version = "0.50.2"
     }
   }
-  # backend "s3" {
-  #   bucket  = "triniti-terraform-shared"
-  #   key     = "terraform.tfstate"
-  #   region  = "ap-southeast-2"
-  #   profile = "terraform"
-  # }
-}
-
-locals {
-  subdomain_development = "dev"
-  subdomain_staging     = "staging"
-  subdomain_production  = "prod"
-}
-
-locals {
-  workspace_to_env = {
-    "development" = "dev"
-    "production"  = "prod"
-    "staging"     = "staging"
-  }
-
-  env_name = lookup(local.workspace_to_env, terraform.workspace, "")
-}
-
-locals {
-  development_urls = [
-    "https://app-${local.subdomain_development}.triniti.net"
-  ]
-
-  staging_urls = [
-    "https://app-${local.subdomain_staging}.triniti.net"
-  ]
-
-  production_urls = [
-    "https://app.triniti.net"
-  ]
-
-  api_development_urls = "https://api-${local.subdomain_development}.triniti.net"
-  api_staging_urls     = "https://api-${local.subdomain_staging}.triniti.net"
-  api_production_urls  = "https://api.triniti.net"
-
-  callbacks_urls = {
-    development = local.development_urls
-    staging     = local.staging_urls
-    production  = local.production_urls
-  }
-
-  api_urls = {
-    development = local.api_development_urls
-    staging     = local.api_staging_urls
-    production  = local.api_production_urls
-  }
-}
-
-variable "aws_ses_access_key_id" {
-  description = "AWS SES access id"
-  type        = string
-}
-
-variable "aws_ses_secret_access_key" {
-  description = "AWS SES access key"
-  type        = string
-}
-
-variable "aws_ses_region" {
-  description = "AWS SES region"
-  type        = string
-}
-
-variable "microsoft_client_id" {
-  description = "Microsoft client ID"
-  type        = string
-}
-variable "microsoft_client_secret" {
-  description = "Microsoft client secret"
-  type        = string
-}
-
-variable "google_client_id" {
-  description = "Microsoft client ID"
-  type        = string
-}
-variable "google_client_secret" {
-  description = "Microsoft client secret"
-  type        = string
-}
-
-variable "auth0_client_id" {
-  description = "The Auth0 client ID"
-  type        = string
-}
-
-variable "auth0_domain" {
-  description = "The Auth0 domain"
-  type        = string
-}
-
-variable "auth0_client_secret" {
-  description = "The Auth0 client secret"
-  type        = string
-}
-
-provider "auth0" {
-  domain        = var.auth0_domain
-  client_id     = var.auth0_client_id
-  client_secret = var.auth0_client_secret
 }
 
 # Setup current tenant
 resource "auth0_tenant" "tenant" {
   friendly_name = "triniti-platform-${terraform.workspace}"
   picture_url   = "https://static.triniti.cloud/images/logo.png"
-  support_email = "support@triniti.cloud"
-  support_url   = "https://app.triniti.cloud/support"
+  support_email = "support@triniti.net"
+  support_url   = "https://app.triniti.net"
 }
 
 # Frontend
 resource "auth0_client" "frontend" {
-  name                = "triniti-frontend"
+  name                = local.frontend_name[terraform.workspace]
   app_type            = "spa"
   logo_uri            = "https://static.triniti.cloud/images/logo.png"
   callbacks           = local.callbacks_urls[terraform.workspace]
@@ -289,7 +183,7 @@ resource "auth0_branding_theme" "triniti_theme" {
 resource "auth0_email" "ses_email_provider" {
   name                 = "ses"
   enabled              = true
-  default_from_address = "no-reply@development.triniti-platform.triniti.cloud"
+  default_from_address = local.email_from_addresses[terraform.workspace]
 
   credentials {
     access_key_id     = var.aws_ses_access_key_id
@@ -303,10 +197,36 @@ resource "auth0_email_template" "welcome_email_template" {
 
   template                = "change_password"
   body                    = "<html> <head> <style type='text/css'> .ExternalClass, .ExternalClass div, .ExternalClass font, .ExternalClass p, .ExternalClass span, .ExternalClass td, img { line-height: 100%; } #outlook a { padding: 0; } .ExternalClass, .ReadMsgBody { width: 100%; } a, blockquote, body, li, p, table, td { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; } table, td { mso-table-lspace: 0; mso-table-rspace: 0; } img { -ms-interpolation-mode: bicubic; border: 0; height: auto; outline: 0; text-decoration: none; } table { border-collapse: collapse !important; } #bodyCell, #bodyTable, body { height: 100% !important; margin: 0; padding: 0; font-family: ProximaNova, sans-serif; background-color: #F3F4F6; } #bodyCell { padding: 20px; } #bodyTable { width: 600px; } #setupButton { display: inline-block; background-color: #212936; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none; outline: none; } h1 { font-size: 24px; line-height: 32px; } @font-face { font-family: ProximaNova; src: url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-regular-webfont-webfont.eot); src: url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-regular-webfont-webfont.eot?#iefix)format('embedded-opentype'), url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-regular-webfont-webfont.woff) format('woff'); font-weight: 400; font-style: normal; } @font-face { font-family: ProximaNova; src: url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-semibold-webfont-webfont.eot); src: url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-semibold-webfont-webfont.eot?#iefix)format('embedded-opentype'), url(https://cdn.auth0.com/fonts/proxima-nova/proximanova-semibold-webfont-webfont.woff) format('woff'); font-weight: 600; font-style: normal; } .main { background-color: #fff; padding: 30px 50px; border-radius: 5px; } @media only screen and (max-width: 480px) { #bodyTable, body { width: 100% !important; } a, blockquote, body, li, p, table, td { -webkit-text-size-adjust: none !important; } body { min-width: 100% !important; } #bodyTable { max-width: 600px !important; } #signIn { max-width: 280px !important; } } </style> </head> <body> <center> <table style='width: 600px;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;margin: 0;padding: 0;font-family: ProximaNova, sans-serif;border-collapse: collapse !important;height: 100% !important;' align='center' border='0' cellpadding='0' cellspacing='0' height='100%' width='100%' id='bodyTable'> <tr> <td align='center' valign='top' id='bodyCell' style='-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%;mso-table-lspace: 0pt;mso-table-rspace: 0pt;margin: 0;padding: 20px;font-family: ProximaNova, sans-serif;height: 100% !important;'> <div class='main'> <p style='text-align: center;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%; margin-bottom: 30px;'> <img src='https://static.triniti.cloud/images/triniti-logo.png' width='100' alt='Triniti' style='-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;' /> </p> <p style='text-align: center;-webkit-text-size-adjust: 100%;-ms-text-size-adjust: 100%; margin-bottom: 20px;'> <img src='https://static.triniti.cloud/images/email-icon.png' width='70' alt='Email icon' style='-ms-interpolation-mode: bicubic;border: 0;height: auto;line-height: 100%;outline: none;text-decoration: none;' /> </p> <h1>Set Your Password</h1> <p style='color: #6B7280;line-height: 1.5;font-size: 14px'>Input your password below to gain access to the platform.</p> <p style='margin: 20px 0'> <a href='{{ url }}' id='setupButton'>Set Password</a> </p> <p style='color: #6B7280;line-height: 1.5;font-size: 14px;'>If you have any questions or need any help getting set up, feel free to reply to this email or reach out to our support team.</p> <p style='color: #1F2937;line-height: 1.5;font-size: 14px;'>The Triniti Team</p> </div> </td> </tr> </table> </center> </body> </html>"
-  result_url              = "https://${local.env_name}-app.triniti.cloud"
+  result_url              = local.apps_url[terraform.workspace]
   subject                 = "You've been invited to join Triniti"
   syntax                  = "liquid"
   url_lifetime_in_seconds = 3600
   enabled                 = true
-  from                    = "Triniti Platform <no-reply@${terraform.workspace}.triniti-platform.triniti.cloud>"
+  from                    = local.email_from_addresses[terraform.workspace]
+}
+
+resource "auth0_prompt_custom_text" "login_text" {
+  prompt   = "login"
+  language = "en"
+  body = jsonencode(
+    {
+      "login" : {
+        "description" : " ",
+        "title" : "Login to Triniti account",
+      }
+    }
+  )
+}
+
+resource "auth0_prompt_custom_text" "signup_text" {
+  prompt   = "signup"
+  language = "en"
+  body = jsonencode(
+    {
+      "signup" : {
+        "description" : " ",
+        "title" : "Create a Triniti account",
+      }
+    }
+  )
 }
