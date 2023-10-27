@@ -34,9 +34,9 @@ jobs:
       - name: Prepare TFVARS
         run: |
           cat <<EOF >> terraform-development.tfvars
-          auth0_domain        = "${vars.AUTH0_DOMAIN}"
-          auth0_client_id     = "${vars.AUTH0_CLIENT_ID}"
-          auth0_client_secret = "${vars.AUTH0_CLIENT_SECRET}"
+          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+          auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
 
           aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
           aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
