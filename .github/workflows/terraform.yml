@@ -24,6 +24,7 @@ jobs:
 
       - name: Prepare TFVARS
         run: |
+          git config --global --add safe.directory $(pwd)
           current_branch_name=$(git branch --show-current)
           if [[ current_branch_name == develop ]]; then
             cat <<EOF >> terraform-development.tfvars
@@ -96,6 +97,7 @@ jobs:
 
       - name: Prepar TFVARS
         run: |
+          git config --global --add safe.directory $(pwd)
           current_branch_name=$(git branch --show-current)
           if [[ current_branch_name == develop ]]; then
             cat <<EOF >> terraform-development.tfvars
