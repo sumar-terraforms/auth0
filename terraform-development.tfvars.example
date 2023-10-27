@@ -1,0 +1,3 @@
+auth0_domain = "triniti-platform-develop.au.auth0.com"
+auth0_client_id = ""
+auth0_client_secret = ""
