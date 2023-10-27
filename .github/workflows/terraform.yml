@@ -3,10 +3,6 @@ name: "Terraform"
 on:
   push:
     branches: ["main", "develop"]
-  pull_request:
-
-permissions:
-  contents: read
 
 jobs:
   terraform-plan:
@@ -15,9 +11,6 @@ jobs:
       id-token: write
       contents: read
     runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash
     container: docker.io/hashicorp/terraform:1.6
     steps:
       - name: Checkout
@@ -31,21 +24,41 @@ jobs:
 
       - name: Prepare TFVARS
         run: |
-          cat <<EOF >> terraform-development.tfvars
-          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-          auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+          current_branch_name=$(git branch --show-current)
+          if [[ current_branch_name == develop ]]; then
+            cat <<EOF >> terraform-development.tfvars
+            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
 
-          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-          aws_ses_region            = "us-east-1"
+            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            aws_ses_region            = "us-east-1"
 
-          google_client_id     = "my_google_client_id"
-          google_client_secret = "my_google_client_secret"
+            google_client_id     = "my_google_client_id"
+            google_client_secret = "my_google_client_secret"
 
-          microsoft_client_id     = "my_microsoft_client_id"
-          microsoft_client_secret = "my_microsoft_client_secret"
-          EOF
+            microsoft_client_id     = "my_microsoft_client_id"
+            microsoft_client_secret = "my_microsoft_client_secret"
+            EOF
+          fi
+          if [[ current_branch_name == main ]]; then
+            cat <<EOF >> terraform-staging.tfvars
+            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+
+            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            aws_ses_region            = "us-east-1"
+
+            google_client_id     = "my_google_client_id"
+            google_client_secret = "my_google_client_secret"
+
+            microsoft_client_id     = "my_microsoft_client_id"
+            microsoft_client_secret = "my_microsoft_client_secret"
+            EOF
+          fi
 
       - name: Terraform version
         run: terraform -version
@@ -69,9 +82,6 @@ jobs:
       id-token: write
       contents: read
     runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash
     needs: terraform-plan
     container: docker.io/hashicorp/terraform:1.6
     steps:
@@ -86,21 +96,41 @@ jobs:
 
       - name: Prepar TFVARS
         run: |
-          cat <<EOF >> terraform-development.tfvars
-          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-          auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+          current_branch_name=$(git branch --show-current)
+          if [[ current_branch_name == develop ]]; then
+            cat <<EOF >> terraform-development.tfvars
+            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
 
-          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-          aws_ses_region            = "us-east-1"
+            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            aws_ses_region            = "us-east-1"
 
-          google_client_id     = "my_google_client_id"
-          google_client_secret = "my_google_client_secret"
+            google_client_id     = "my_google_client_id"
+            google_client_secret = "my_google_client_secret"
 
-          microsoft_client_id     = "my_microsoft_client_id"
-          microsoft_client_secret = "my_microsoft_client_secret"
-          EOF
+            microsoft_client_id     = "my_microsoft_client_id"
+            microsoft_client_secret = "my_microsoft_client_secret"
+            EOF
+          fi
+          if [[ current_branch_name == main ]]; then
+            cat <<EOF >> terraform-staging.tfvars
+            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+
+            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            aws_ses_region            = "us-east-1"
+
+            google_client_id     = "my_google_client_id"
+            google_client_secret = "my_google_client_secret"
+
+            microsoft_client_id     = "my_microsoft_client_id"
+            microsoft_client_secret = "my_microsoft_client_secret"
+            EOF
+          fi
 
       - name: Terraform Init
         run: terraform init
