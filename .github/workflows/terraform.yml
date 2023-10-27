@@ -46,7 +46,7 @@ name: 'Terraform'
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop"]
   pull_request:
 
 permissions:
@@ -55,7 +55,7 @@ permissions:
 jobs:
   terraform:
     name: 'Terraform'
-    runs-on: laptop-kantor
+    runs-on: self-hosted
     #environment: production
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
