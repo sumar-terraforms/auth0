@@ -734,7 +734,7 @@ resource "auth0_client_grant" "triniti_management_grant" {
 # Authorize triniti-management (for Triniti Backend) to Auth0 Management API
 resource "auth0_client_grant" "grant_default_auth0_management_api_to_triniti_management" {
   client_id = auth0_client.triniti_management.id
-  audience = "https://${var.auth0_domain}/api/v2/"
+  audience  = "https://${var.auth0_domain}/api/v2/"
   scope = [
     "read:client_grants",
     "create:client_grants",
