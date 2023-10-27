@@ -24,42 +24,21 @@ jobs:
 
       - name: Prepare TFVARS
         run: |
-          git config --global --add safe.directory $(pwd)
-          current_branch_name=$(git branch --show-current)
-          if [ $current_branch_name = develop ]; then
-            cat <<EOF >> terraform-development.tfvars
-            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+          cat <<EOF >> terraform-development.tfvars
+          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+          auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
 
-            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            aws_ses_region            = "us-east-1"
+          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          aws_ses_region            = "us-east-1"
 
-            google_client_id     = "my_google_client_id"
-            google_client_secret = "my_google_client_secret"
+          google_client_id     = "my_google_client_id"
+          google_client_secret = "my_google_client_secret"
 
-            microsoft_client_id     = "my_microsoft_client_id"
-            microsoft_client_secret = "my_microsoft_client_secret"
-            EOF
-          fi
-          if [ $current_branch_name = main ]; then
-            cat <<EOF >> terraform-staging.tfvars
-            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
-
-            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            aws_ses_region            = "us-east-1"
-
-            google_client_id     = "my_google_client_id"
-            google_client_secret = "my_google_client_secret"
-
-            microsoft_client_id     = "my_microsoft_client_id"
-            microsoft_client_secret = "my_microsoft_client_secret"
-            EOF
-          fi
+          microsoft_client_id     = "my_microsoft_client_id"
+          microsoft_client_secret = "my_microsoft_client_secret"
+          EOF
 
       - name: Terraform version
         run: terraform -version
@@ -97,42 +76,21 @@ jobs:
 
       - name: Prepar TFVARS
         run: |
-          git config --global --add safe.directory $(pwd)
-          current_branch_name=$(git branch --show-current)
-          if [ current_branch_name = develop ]; then
-            cat <<EOF >> terraform-development.tfvars
-            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
+          cat <<EOF >> terraform-staging.tfvars
+          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+          auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
 
-            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            aws_ses_region            = "us-east-1"
+          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
+          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          aws_ses_region            = "us-east-1"
 
-            google_client_id     = "my_google_client_id"
-            google_client_secret = "my_google_client_secret"
+          google_client_id     = "my_google_client_id"
+          google_client_secret = "my_google_client_secret"
 
-            microsoft_client_id     = "my_microsoft_client_id"
-            microsoft_client_secret = "my_microsoft_client_secret"
-            EOF
-          fi
-          if [ current_branch_name = main ]; then
-            cat <<EOF >> terraform-staging.tfvars
-            auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-            auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-            auth0_client_secret = "${{ vars.AUTH0_CLIENT_SECRET }}"
-
-            aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-            aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            aws_ses_region            = "us-east-1"
-
-            google_client_id     = "my_google_client_id"
-            google_client_secret = "my_google_client_secret"
-
-            microsoft_client_id     = "my_microsoft_client_id"
-            microsoft_client_secret = "my_microsoft_client_secret"
-            EOF
-          fi
+          microsoft_client_id     = "my_microsoft_client_id"
+          microsoft_client_secret = "my_microsoft_client_secret"
+          EOF
 
       - name: Terraform Init
         run: terraform init
@@ -141,4 +99,4 @@ jobs:
         run: terraform workspace new development || terraform workspace select development
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file=terraform-$(terraform workspace show).tfvars
+        run: echo "terraform apply -auto-approve -var-file=terraform-$(terraform workspace show).tfvars"
