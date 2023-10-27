@@ -26,7 +26,7 @@ jobs:
         run: |
           git config --global --add safe.directory $(pwd)
           current_branch_name=$(git branch --show-current)
-          if [[ current_branch_name == develop ]]; then
+          if [ $current_branch_name = develop ]; then
             cat <<EOF >> terraform-development.tfvars
             auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
             auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
@@ -43,7 +43,7 @@ jobs:
             microsoft_client_secret = "my_microsoft_client_secret"
             EOF
           fi
-          if [[ current_branch_name == main ]]; then
+          if [ $current_branch_name = main ]; then
             cat <<EOF >> terraform-staging.tfvars
             auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
             auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
@@ -99,7 +99,7 @@ jobs:
         run: |
           git config --global --add safe.directory $(pwd)
           current_branch_name=$(git branch --show-current)
-          if [[ current_branch_name == develop ]]; then
+          if [ current_branch_name = develop ]; then
             cat <<EOF >> terraform-development.tfvars
             auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
             auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
@@ -116,7 +116,7 @@ jobs:
             microsoft_client_secret = "my_microsoft_client_secret"
             EOF
           fi
-          if [[ current_branch_name == main ]]; then
+          if [ current_branch_name = main ]; then
             cat <<EOF >> terraform-staging.tfvars
             auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
             auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
