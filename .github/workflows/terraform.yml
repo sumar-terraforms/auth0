@@ -60,8 +60,7 @@ jobs:
     - name: Terraform Init
       id: init
       run: |
-        aws s3 ls s3://sumar-terraform-shared
-        aws s3 ls 's3://sumar-terraform-shared/env:'
+        aws s3 ls s3://sumar-terraform-state
         terraform init
 
     - name: Terraform Validate
