@@ -131,6 +131,7 @@ jobs:
 
   populate-auth0-staging:
     if: startsWith(github.ref, 'refs/heads/release/')
+    needs: format-validate
     environment:
       name: staging
     permissions:
@@ -189,6 +190,7 @@ jobs:
 
   populate-auth0-production:
     if: github.ref == 'refs/heads/main'
+    needs: format-validate
     environment:
       name: production
     permissions:
