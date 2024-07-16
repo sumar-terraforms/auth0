@@ -66,8 +66,8 @@ resource "auth0_connection" "database" {
       change_password = "function changePassword(email, newPassword, callback) {\n const msg = 'Please implement the Create script for this database connection';\n  return callback(new Error(msg));\n}\n"
       delete          = "function remove(id, callback) {\n  const msg = 'Please implement the Delete script for this database ' +\n    'connection at https://manage.auth0.com/#/connections/database';\n  return callback(new Error(msg));\n}\n"
       get_user        = "function getByEmail(email, callback) {\n  const msg = 'Please implement the Get User script for this database connection';\n  return callback(new Error(msg));\n}\n"
-      login           = "function login(email, password, callback) {\n  const msg = 'Please implement the Login script for this database connection';\n  return callback(new Error(msg));\n}\n"
-      verify          = "function verify(email, callback) {\n const msg = 'Please implement the Verify script for this database connection';\n  return callback(new Error(msg));\n}\n"
+      login           = "function login(email, password, callback) {\n  const msg = 'Please implement the Login script for this database connection';\n  return callback(new Error(msg));\n}"
+      verify          = "function verify(email, callback) {\n const msg = 'Please implement the Verify script for this database connection';\n  return callback(new Error(msg));\n}"
     }
   }
 }
