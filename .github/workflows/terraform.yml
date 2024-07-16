@@ -2,103 +2,118 @@ name: "Terraform"
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches:
+      - develop
+      - 'release/**'
+      - main
+  pull_request:
+    branches:
+      - develop
+      - 'release/**'
+      - main
 
 jobs:
-  terraform-plan:
+  format-validate:
     name: "Terraform Plan"
     permissions:
       id-token: write
       contents: read
-    runs-on: self-hosted
-    # container: docker.io/hashicorp/terraform:1.6
+      pull-requests: write
+
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.9.2"
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
-          role-session-name: github-deploy
-          aws-region: ap-southeast-1
-      - uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-      - name: Prepare TFVARS
-        run: |
-          cat <<EOF >> terraform-development.tfvars
-          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-          auth0_client_secret = "${{ secrets.AUTH0_CLIENT_SECRET }}"
+    - name: Terraform fmt
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
 
-          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-          aws_ses_region            = "us-east-1"
+    - name: Terraform Init
+      id: init
+      run: terraform init
 
-          google_client_id     = "my_google_client_id"
-          google_client_secret = "my_google_client_secret"
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
 
-          microsoft_client_id     = "my_microsoft_client_id"
-          microsoft_client_secret = "my_microsoft_client_secret"
-          EOF
+  # terraform-plan:
+  #   name: "Terraform Plan"
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   runs-on: ubuntu-latest
+  #   # container: docker.io/hashicorp/terraform:1.6
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Terraform version
-        run: terraform -version
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+  #         role-session-name: github-deploy
+  #         aws-region: ap-southeast-1
+  #     - uses: hashicorp/setup-terraform@v2
+  #       with:
+  #         terraform_wrapper: false
+  #     - name: Prepare TFVARS
+  #       run: |
+  #         cat <<EOF >> terraform-development.tfvars
+  #         auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+  #         auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+  #         auth0_client_secret = "${{ secrets.AUTH0_CLIENT_SECRET }}"
+  #         EOF
 
-      - name: Terraform Init
-        run: terraform init
+  #     - name: Terraform version
+  #       run: terraform -version
 
-      - name: Select development workspace
-        run: terraform workspace new development || terraform workspace select development
+  #     - name: Terraform Init
+  #       run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
+  #     - name: Select development workspace
+  #       run: terraform workspace new development || terraform workspace select development
 
-      - name: Terraform Plan
-        run: terraform plan -no-color -var-file=terraform-$(terraform workspace show).tfvars
+  #     - name: Terraform Validate
+  #       run: terraform validate
 
-  deploy-development:
-    if: github.ref == 'refs/heads/"develop"'
-    name: "Deploy developmnet environment"
-    permissions:
-      id-token: write
-      contents: read
-    runs-on: self-hosted
-    needs: terraform-plan
-    container: docker.io/hashicorp/terraform:1.6
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #     - name: Terraform Plan
+  #       run: terraform plan -no-color -var-file=terraform-$(terraform workspace show).tfvars
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
-          role-session-name: github-deploy
-          aws-region: ap-southeast-1
+  # deploy-development:
+  #   if: github.ref == 'refs/heads/"develop"'
+  #   name: "Deploy developmnet environment"
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   runs-on: ubuntu-latest
+  #   needs: terraform-plan
+  #   container: docker.io/hashicorp/terraform:1.6
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Prepar TFVARS
-        run: |
-          cat <<EOF >> terraform-development.tfvars
-          auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
-          auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
-          auth0_client_secret = "${{ secrets.AUTH0_CLIENT_SECRET }}"
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+  #         role-session-name: github-deploy
+  #         aws-region: ap-southeast-1
 
-          aws_ses_access_key_id     = "AKIAXXXXXXXXXXXXXXXX"
-          aws_ses_secret_access_key = "7e8c2148xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-          aws_ses_region            = "us-east-1"
+  #     - name: Prepar TFVARS
+  #       run: |
+  #         cat <<EOF >> terraform-development.tfvars
+  #         auth0_domain        = "${{ vars.AUTH0_DOMAIN }}"
+  #         auth0_client_id     = "${{ vars.AUTH0_CLIENT_ID }}"
+  #         auth0_client_secret = "${{ secrets.AUTH0_CLIENT_SECRET }}"
+  #         EOF
 
-          google_client_id     = "my_google_client_id"
-          google_client_secret = "my_google_client_secret"
+  #     - name: Terraform Init
+  #       run: terraform init
 
-          microsoft_client_id     = "my_microsoft_client_id"
-          microsoft_client_secret = "my_microsoft_client_secret"
-          EOF
+  #     - name: Select development workspace
+  #       run: terraform workspace new development || terraform workspace select development
 
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Select development workspace
-        run: terraform workspace new development || terraform workspace select development
-
-      - name: Terraform Apply
-        run: echo "terraform apply -auto-approve -var-file=terraform-$(terraform workspace show).tfvars"
+  #     - name: Terraform Apply
+  #       run: echo "terraform apply -auto-approve -var-file=terraform-$(terraform workspace show).tfvars"
