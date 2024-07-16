@@ -129,7 +129,7 @@ jobs:
       - name: Plan
         run: terraform -chdir=infra/terraform plan -var-file=terraform-development.tfvars -no-color
 
-  populate-auth0-staging:
+  plan-auth0-staging:
     if: startsWith(github.ref, 'refs/heads/release/')
     needs: format-validate
     environment:
@@ -188,7 +188,7 @@ jobs:
       - name: Apply
         run: terraform -chdir=infra/terraform plan -var-file=terraform-staging.tfvars -no-color
 
-  populate-auth0-production:
+  plan-auth0-production:
     if: github.ref == 'refs/heads/main'
     needs: format-validate
     environment:
