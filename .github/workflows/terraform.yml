@@ -38,10 +38,11 @@ jobs:
 
     - name: Create AWS named profile
       run: |
-        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile terraform
-        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile terraform
-        aws configure set aws_session_token $AWS_SESSION_TOKEN --profile terraform
-        aws configure set region ap-southeast-3 --profile terraform
+        env
+        # aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile terraform
+        # aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile terraform
+        # aws configure set aws_session_token $AWS_SESSION_TOKEN --profile terraform
+        # aws configure set region ap-southeast-3 --profile terraform
 
     - name: Terraform fmt
       id: fmt
