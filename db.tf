@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "s3" {
-    bucket  = "triniti-terraform-shared"
-    key     = "terraform.tfstate"
+    bucket  = "sumar-terraform-shared"
+    key     = "test-auth0.tfstate"
     region  = "ap-southeast-2"
     profile = "terraform"
   }
