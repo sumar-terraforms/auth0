@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     bucket  = "sumar-terraform-shared"
     key     = "test-auth0.tfstate"
-    region  = "ap-southeast-2"
+    region  = "ap-southeast-3"
     profile = "terraform"
   }
 }
