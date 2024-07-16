@@ -1,0 +1,179 @@
+name: "Terraform Apply"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  populate-auth0-develop:
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.2"
+      - name: Configure AWS Credentials
+        id: aws-creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+          role-session-name: github-deploy
+          aws-region: ap-southeast-3
+      - name: Create AWS named profile
+        run: |
+          mkdir -p $HOME/.aws
+
+          cat <<EOF > $HOME/.aws/config
+            [profile terraform]
+            region=ap-southeast-3
+          EOF
+
+          cat <<EOF > $HOME/.aws/credentials
+            [terraform]
+            aws_access_key_id=$AWS_ACCESS_KEY_ID
+            aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+            aws_session_token=$AWS_SESSION_TOKEN
+          EOF
+    
+      - name: Prepare tfvars
+        run: |
+          cat << EOF > infra/terraform/terraform-development.tfvars
+            auth0_domain        = ${{ vars.AUTH0_DOMAIN }}
+            auth0_client_id     = ${{ vars.AUTH0_CLIENT_ID }}
+            auth0_client_secret = ${{ secrets.AUTH0_CLIENT_SECRET }}
+            # aws_ses_access_key_id     = ${{ vars.AWS_SES_ACCESS_KEY_ID }}
+            # aws_ses_secret_access_key = ${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}
+            # aws_ses_region            = ${{ vars.AWS_SES_REGION }}
+          EOF
+      - name: Init
+        run: |
+          terraform -chdir=infra/terraform init
+          terraform -chdir=infra/terraform workspace new development || terraform -chdir=infra/terraform workspace select development
+      - name: Plan
+        run: terraform -chdir=infra/terraform plan -var-file=terraform-development.tfvars -no-color
+      - name: Apply
+        run: terraform -chdir=infra/terraform apply -auto-approve -var-file=terraform-development.tfvars -no-color
+  
+  populate-auth0-staging:
+    if: startsWith(github.ref, 'refs/heads/release/')
+    environment:
+      name: staging
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.2"
+      - name: Configure AWS Credentials
+        id: aws-creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+          role-session-name: github-deploy
+          aws-region: ap-southeast-3
+      - name: Create AWS named profile
+        run: |
+          mkdir -p $HOME/.aws
+
+          cat <<EOF > $HOME/.aws/config
+            [profile terraform]
+            region=ap-southeast-3
+          EOF
+
+          cat <<EOF > $HOME/.aws/credentials
+            [terraform]
+            aws_access_key_id=$AWS_ACCESS_KEY_ID
+            aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+            aws_session_token=$AWS_SESSION_TOKEN
+          EOF
+    
+      - name: Prepare tfvars
+        run: |
+          cat << EOF > infra/terraform/terraform-staging.tfvars
+            auth0_domain        = ${{ vars.AUTH0_DOMAIN }}
+            auth0_client_id     = ${{ vars.AUTH0_CLIENT_ID }}
+            auth0_client_secret = ${{ secrets.AUTH0_CLIENT_SECRET }}
+            # aws_ses_access_key_id     = ${{ vars.AWS_SES_ACCESS_KEY_ID }}
+            # aws_ses_secret_access_key = ${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}
+            # aws_ses_region            = ${{ vars.AWS_SES_REGION }}
+          EOF
+      - name: Init
+        run: |
+          terraform -chdir=infra/terraform init
+          terraform -chdir=infra/terraform workspace new staging || terraform -chdir=infra/terraform workspace select staging
+      - name: Plan
+        run: terraform -chdir=infra/terraform plan -var-file=terraform-staging.tfvars -no-color
+      - name: Apply
+        run: terraform -chdir=infra/terraform apply -auto-approve -var-file=terraform-staging.tfvars -no-color
+
+  populate-auth0-production:
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    permissions:
+      id-token: write
+      contents: read
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.2"
+      - name: Configure AWS Credentials
+        id: aws-creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+          role-session-name: github-deploy
+          aws-region: ap-southeast-3
+      - name: Create AWS named profile
+        run: |
+          mkdir -p $HOME/.aws
+
+          cat <<EOF > $HOME/.aws/config
+            [profile terraform]
+            region=ap-southeast-3
+          EOF
+
+          cat <<EOF > $HOME/.aws/credentials
+            [terraform]
+            aws_access_key_id=$AWS_ACCESS_KEY_ID
+            aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+            aws_session_token=$AWS_SESSION_TOKEN
+          EOF
+    
+      - name: Prepare tfvars
+        run: |
+          cat << EOF > infra/terraform/terraform-production.tfvars
+            auth0_domain        = ${{ vars.AUTH0_DOMAIN }}
+            auth0_client_id     = ${{ vars.AUTH0_CLIENT_ID }}
+            auth0_client_secret = ${{ secrets.AUTH0_CLIENT_SECRET }}
+            # aws_ses_access_key_id     = ${{ vars.AWS_SES_ACCESS_KEY_ID }}
+            # aws_ses_secret_access_key = ${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}
+            # aws_ses_region            = ${{ vars.AWS_SES_REGION }}
+          EOF
+      - name: Init
+        run: |
+          terraform -chdir=infra/terraform init
+          terraform -chdir=infra/terraform workspace new production || terraform -chdir=infra/terraform workspace select production
+      - name: Plan
+        run: terraform -chdir=infra/terraform plan -var-file=terraform-production.tfvars -no-color
+      - name: Apply
+        run: terraform -chdir=infra/terraform apply -auto-approve -var-file=terraform-production.tfvars -no-color
