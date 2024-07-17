@@ -4,17 +4,17 @@ on:
   push:
     branches:
       - develop
-      - 'release/**'
+      - "release/**"
       - main
     paths:
-      - 'infra/terraform/**'
+      - "infra/terraform/**"
   pull_request:
     branches:
       - develop
-      - 'release/**'
+      - "release/**"
       - main
     paths:
-      - 'infra/terraform/**'
+      - "infra/terraform/**"
 
 jobs:
   format-validate:
@@ -26,51 +26,51 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Source Code
-      uses: actions/checkout@v4
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: "1.9.2"
-    - name: Configure AWS Credentials
-      id: aws-creds
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
-        role-session-name: github-deploy
-        aws-region: ap-southeast-3
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.2"
+      - name: Configure AWS Credentials
+        id: aws-creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::676791758112:role/RoleForGithubActions
+          role-session-name: github-deploy
+          aws-region: ap-southeast-3
 
-    # Terraform with aws sso is buggy
-    # Let use good old way
-    - name: Create AWS named profile
-      run: |
-        mkdir -p $HOME/.aws
+      # Terraform with aws sso is buggy
+      # Let use good old way
+      - name: Create AWS named profile
+        run: |
+          mkdir -p $HOME/.aws
 
-        cat <<EOF > $HOME/.aws/config
-          [profile terraform]
-          region=ap-southeast-3
-        EOF
+          cat <<EOF > $HOME/.aws/config
+            [profile terraform]
+            region=ap-southeast-3
+          EOF
 
-        cat <<EOF > $HOME/.aws/credentials
-          [terraform]
-          aws_access_key_id=$AWS_ACCESS_KEY_ID
-          aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
-          aws_session_token=$AWS_SESSION_TOKEN
-        EOF
+          cat <<EOF > $HOME/.aws/credentials
+            [terraform]
+            aws_access_key_id=$AWS_ACCESS_KEY_ID
+            aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+            aws_session_token=$AWS_SESSION_TOKEN
+          EOF
 
-    - name: Terraform fmt
-      id: fmt
-      run: terraform fmt -check
-      continue-on-error: true
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
 
-    - name: Terraform Init
-      id: init
-      run: |
-        terraform init
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init
 
-    - name: Terraform Validate
-      id: validate
-      run: terraform validate -no-color
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
 
   plan-auth0-develop:
     if: github.ref == 'refs/heads/develop'
@@ -111,7 +111,7 @@ jobs:
             aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
             aws_session_token=$AWS_SESSION_TOKEN
           EOF
-    
+
       - name: Prepare tfvars
         run: |
           cat << EOF > infra/terraform/terraform-development.tfvars
@@ -128,7 +128,42 @@ jobs:
           terraform -chdir=infra/terraform workspace new development || terraform -chdir=infra/terraform workspace select development
       - name: Plan
         run: terraform -chdir=infra/terraform plan -var-file=terraform-development.tfvars -no-color
+      - uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          #github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            <details><summary>Validation Output</summary>
 
+            \`\`\`\n
+            ${{ steps.validate.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
   plan-auth0-staging:
     if: startsWith(github.ref, 'refs/heads/release/')
     needs: format-validate
@@ -168,7 +203,7 @@ jobs:
             aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
             aws_session_token=$AWS_SESSION_TOKEN
           EOF
-    
+
       - name: Prepare tfvars
         run: |
           cat << EOF > infra/terraform/terraform-staging.tfvars
@@ -225,7 +260,7 @@ jobs:
             aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
             aws_session_token=$AWS_SESSION_TOKEN
           EOF
-    
+
       - name: Prepare tfvars
         run: |
           cat << EOF > infra/terraform/terraform-production.tfvars
@@ -242,3 +277,4 @@ jobs:
           terraform -chdir=infra/terraform workspace new production || terraform -chdir=infra/terraform workspace select production
       - name: Plan
         run: terraform -chdir=infra/terraform plan -var-file=terraform-production.tfvars -no-color
+
