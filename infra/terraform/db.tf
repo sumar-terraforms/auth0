@@ -35,7 +35,7 @@ variable "auth0_client_secret" {
 }
 
 resource "auth0_connection" "database" {
-  name     = "Username-Password-Authentication"
+  name     = "Sumar-Database"
   strategy = "auth0"
 
   options {
@@ -46,7 +46,7 @@ resource "auth0_connection" "database" {
       return_enroll_settings = true
     }
 
-    password_policy          = "good"
+    password_policy = "good"
     password_history {
       enable = true
       size   = 3
