@@ -83,9 +83,22 @@ jobs:
       - name: Plan
         id: tf-plan
         run: terraform -chdir=infra/terraform plan -no-color
+      - name: Create string output of Terraform Plan
+        id: tf-plan-string
+        run: |
+          delimiter="$(openssl rand -hex 8)"
+          echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
+          echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```terraform' >> $GITHUB_OUTPUT
+          echo "${{ steps.tf-plan.outputs.stdout }}" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "</details>" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
       - name: Publish Terraform Plan to Task Summary
         env:
-          SUMMARY: ${{ steps.tf-plan.outputs.stdout }}
+          SUMMARY: ${{ steps.tf-plan-string.outputs.stdout }}
         run: |
           echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
 
