@@ -35,7 +35,7 @@ jobs:
           EOF
       - name: Init
         run: |
-          terraform -chdir=infra/terraform init -migrate-state -force-copy
+          terraform -chdir=infra/terraform init
           terraform -chdir=infra/terraform workspace new development || terraform -chdir=infra/terraform workspace select development
       - name: Apply
         run: terraform -chdir=infra/terraform apply -auto-approve -var-file=terraform-development.tfvars -no-color

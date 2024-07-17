@@ -159,4 +159,3 @@ jobs:
           terraform -chdir=infra/terraform workspace new production || terraform -chdir=infra/terraform workspace select production
       - name: Plan
         run: terraform -chdir=infra/terraform plan -var-file=terraform-production.tfvars -no-color
-
