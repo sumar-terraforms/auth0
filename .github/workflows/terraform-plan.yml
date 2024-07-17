@@ -85,7 +85,7 @@ jobs:
         run: terraform -chdir=infra/terraform plan -no-color
       - name: Publish Terraform Plan to Task Summary
         env:
-          SUMMARY: ${{ steps.tf-plan.outputs.summary }}
+          SUMMARY: ${{ steps.tf-plan.outputs.stdout }}
         run: |
           echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
 
