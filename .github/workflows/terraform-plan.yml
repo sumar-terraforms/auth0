@@ -91,7 +91,7 @@ jobs:
           terraform -chdir=infra/terraform init
           terraform -chdir=infra/terraform workspace new development || terraform -chdir=infra/terraform workspace select development
       - name: Plan
-        run: terraform -chdir=infra/terraform plan -var-file=terraform-development.tfvars -no-color
+        run: terraform -chdir=infra/terraform plan -no-color
 
   plan-auth0-staging:
     if: startsWith(github.ref, 'refs/heads/release/')
