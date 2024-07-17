@@ -98,7 +98,7 @@ jobs:
           echo "${delimiter}" >> $GITHUB_OUTPUT
       - name: Publish Terraform Plan to Task Summary
         env:
-          SUMMARY: ${{ steps.tf-plan-string.outputs.stdout }}
+          SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
         run: |
           echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
 
