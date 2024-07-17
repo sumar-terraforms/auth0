@@ -55,12 +55,12 @@ jobs:
     environment:
       name: development
     env:
-      TF_AUTH0_DOMAIN: "${{ vars.AUTH0_DOMAIN }}"
-      TF_AUTH0_CLIENT_ID: "${{ vars.AUTH0_CLIENT_ID }}"
-      TF_AUTH0_CLIENT_SECRET : "${{ secrets.AUTH0_CLIENT_SECRET }}"
-      TF_AWS_SES_ACCESS_KEY_ID : "${{ vars.AWS_SES_ACCESS_KEY_ID }}"
-      TF_AWS_SES_SECRET_ACCESS_KEY: "${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}"
-      TF_AWS_SES_REGION: "${{ vars.AWS_SES_REGION }}"
+      TF_VAR_auth0_domain: "${{ vars.AUTH0_DOMAIN }}"
+      TF_VAR_auth0_client_id: "${{ vars.AUTH0_CLIENT_ID }}"
+      TF_VAR_auth0_client_secret : "${{ secrets.AUTH0_CLIENT_SECRET }}"
+      TF_VAR_aws_ses_access_key_id : "${{ vars.AWS_SES_ACCESS_KEY_ID }}"
+      TF_VAR_aws_ses_secret_access_key: "${{ secrets.AWS_SES_SECRET_ACCESS_KEY }}"
+      TF_VAR_aws_ses_region: "${{ vars.AWS_SES_REGION }}"
     permissions:
       id-token: write
       contents: read
