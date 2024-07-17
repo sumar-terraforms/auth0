@@ -35,7 +35,7 @@ variable "auth0_client_secret" {
 }
 
 resource "auth0_connection" "database" {
-  name     = "Sumar-Database"
+  name     = "Sumar-Database-User"
   strategy = "auth0"
 
   options {
